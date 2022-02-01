@@ -41,8 +41,6 @@ public class FormRequest {
     @Valid
     private List<WebsiteSupervisor> websiteSupervisors;
 
-    private MultipartFile[] multipartFiles;
-
     @NotNull(message = "Website Software Company can not be null!")
     private String websiteSoftwareCompany;
 

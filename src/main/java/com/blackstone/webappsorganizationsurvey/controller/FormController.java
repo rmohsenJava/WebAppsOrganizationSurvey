@@ -2,6 +2,7 @@ package com.blackstone.webappsorganizationsurvey.controller;
 
 
 import com.blackstone.webappsorganizationsurvey.dto.FormRequest;
+import com.blackstone.webappsorganizationsurvey.dto.FormResponse;
 import com.blackstone.webappsorganizationsurvey.entity.Form;
 import com.blackstone.webappsorganizationsurvey.service.IFormService;
 import io.swagger.annotations.ApiOperation;
@@ -11,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,5 +36,15 @@ public class FormController {
 
         return this.formService
                 .submitForm(formRequest, contractFiles, systemImages, securityProtocolsDocuments);
+    }
+
+
+    @ApiOperation(value = "Get AL survey forms",
+            notes = "Get AL survey forms"
+    )
+    @GetMapping()
+    @ResponseStatus(HttpStatus.OK)
+    public List<FormResponse> getForms() {
+        return this.formService.getForms();
     }
 }

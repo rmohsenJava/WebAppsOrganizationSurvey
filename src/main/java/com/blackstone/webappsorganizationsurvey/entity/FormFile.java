@@ -36,6 +36,7 @@ public class FormFile {
 
     @ManyToOne
     @JoinColumn(name = "form_id", referencedColumnName = "id", nullable = false)
+    @ToString.Exclude
     private Form form;
 
     @CreationTimestamp

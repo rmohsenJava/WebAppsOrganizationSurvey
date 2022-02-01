@@ -160,7 +160,7 @@ public class Form {
     @Column(name = "tracking_feature_details")
     private String trackingFeatureDetails;
 
-    @OneToMany(mappedBy = "form", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "form", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @ToString.Exclude
     private List<FormFile> formFiles = new ArrayList<>();
 
