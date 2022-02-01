@@ -5,6 +5,7 @@ import com.blackstone.webappsorganizationsurvey.dto.FormRequest;
 import com.blackstone.webappsorganizationsurvey.dto.FormResponse;
 import com.blackstone.webappsorganizationsurvey.entity.Form;
 import com.blackstone.webappsorganizationsurvey.entity.FormFile;
+import com.blackstone.webappsorganizationsurvey.exception.FormNotFoundException;
 import com.blackstone.webappsorganizationsurvey.repository.FormFileRepository;
 import com.blackstone.webappsorganizationsurvey.repository.FormRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,6 +53,14 @@ public class FormService implements IFormService {
         return formList.stream()
                 .map(form -> mapToDTO(form, mapToFileDTO(form.getFormFiles())))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public FormResponse getFormById(String id) throws FormNotFoundException {
+
+        return this.formRepository.findById(Long.parseLong(id))
+                .map(formMap -> this.mapToDTO(formMap, this.mapToFileDTO(formMap.getFormFiles())))
+                .orElseThrow(() -> new FormNotFoundException("Form Not Found"));
     }
 
 

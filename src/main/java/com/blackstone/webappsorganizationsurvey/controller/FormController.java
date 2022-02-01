@@ -4,6 +4,7 @@ package com.blackstone.webappsorganizationsurvey.controller;
 import com.blackstone.webappsorganizationsurvey.dto.FormRequest;
 import com.blackstone.webappsorganizationsurvey.dto.FormResponse;
 import com.blackstone.webappsorganizationsurvey.entity.Form;
+import com.blackstone.webappsorganizationsurvey.exception.FormNotFoundException;
 import com.blackstone.webappsorganizationsurvey.service.IFormService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -46,5 +47,14 @@ public class FormController {
     @ResponseStatus(HttpStatus.OK)
     public List<FormResponse> getForms() {
         return this.formService.getForms();
+    }
+
+    @ApiOperation(value = "Get survey forms BY ID",
+            notes = "Get survey forms BY ID"
+    )
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public FormResponse getFormById(@PathVariable String id) throws FormNotFoundException {
+        return this.formService.getFormById(id);
     }
 }

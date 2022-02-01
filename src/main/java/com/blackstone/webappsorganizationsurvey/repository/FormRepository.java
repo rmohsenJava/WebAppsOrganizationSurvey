@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public interface FormRepository extends JpaRepository<Form, Integer> {
+public interface FormRepository extends JpaRepository<Form, Long> {
 }

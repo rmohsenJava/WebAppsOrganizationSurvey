@@ -6,7 +6,6 @@ import com.blackstone.webappsorganizationsurvey.entity.WebsiteMaintenanceFees;
 import com.blackstone.webappsorganizationsurvey.entity.WebsiteSupervisor;
 import com.blackstone.webappsorganizationsurvey.entity.enums.ServiceFollowUp;
 import lombok.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
