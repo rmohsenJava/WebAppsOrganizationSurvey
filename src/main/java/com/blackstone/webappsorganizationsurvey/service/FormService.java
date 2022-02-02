@@ -10,6 +10,9 @@ import com.blackstone.webappsorganizationsurvey.repository.FormFileRepository;
 import com.blackstone.webappsorganizationsurvey.repository.FormRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,13 +47,16 @@ public class FormService implements IFormService {
     }
 
     @Override
-    public List<FormResponse> getForms() {
+    public Page<FormResponse> getForms(int offset, int pageSize) {
 
-        List<Form> formList = this.formRepository.findAll();
+        PageRequest pageRequest = PageRequest.of(offset, pageSize);
 
-        return formList.stream()
+        Page<Form> formList = this.formRepository.findAll(pageRequest);
+
+        return new PageImpl<>(formList.getContent().stream()
                 .map(form -> mapToDTO(form, mapToFileDTO(form.getFormFiles())))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()), pageRequest, formList.getTotalElements());
+
     }
 
     @Override

@@ -8,13 +8,12 @@ import com.blackstone.webappsorganizationsurvey.exception.FormNotFoundException;
 import com.blackstone.webappsorganizationsurvey.service.IFormService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,14 +42,14 @@ public class FormController {
     @ApiOperation(value = "Get AL survey forms",
             notes = "Get AL survey forms"
     )
-    @GetMapping()
+    @GetMapping("/{offset}/{pageSize}")
     @ResponseStatus(HttpStatus.OK)
-    public List<FormResponse> getForms() {
-        return this.formService.getForms();
+    public Page<FormResponse> getForms(@PathVariable int offset, @PathVariable int pageSize) {
+        return this.formService.getForms(offset, pageSize);
     }
 
-    @ApiOperation(value = "Get survey forms BY ID",
-            notes = "Get survey forms BY ID"
+    @ApiOperation(value = "Get survey forms by ID",
+            notes = "Get survey forms by ID"
     )
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)

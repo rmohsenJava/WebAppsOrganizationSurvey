@@ -4,9 +4,8 @@ import com.blackstone.webappsorganizationsurvey.dto.FormRequest;
 import com.blackstone.webappsorganizationsurvey.dto.FormResponse;
 import com.blackstone.webappsorganizationsurvey.entity.Form;
 import com.blackstone.webappsorganizationsurvey.exception.FormNotFoundException;
+import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 public interface IFormService {
 
@@ -15,7 +14,7 @@ public interface IFormService {
                     MultipartFile[] systemImages,
                     MultipartFile[] securityProtocolsDocuments) throws Exception;
 
-    List<FormResponse> getForms();
+    Page<FormResponse> getForms(int offset, int pageSize);
 
     FormResponse getFormById(String id) throws FormNotFoundException;
 }
