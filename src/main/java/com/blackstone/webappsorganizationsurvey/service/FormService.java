@@ -12,6 +12,7 @@ import com.blackstone.webappsorganizationsurvey.exception.FormAlreadyCanceledExc
 import com.blackstone.webappsorganizationsurvey.exception.FormAlreadyCompletedException;
 import com.blackstone.webappsorganizationsurvey.exception.FormNotFoundException;
 import com.blackstone.webappsorganizationsurvey.repository.FormRepository;
+import com.blackstone.webappsorganizationsurvey.util.FormActionValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
@@ -33,20 +34,20 @@ public class FormService implements IFormService {
 
     private final FormRepository formRepository;
 
+    /**
+     * #{@inheritDoc}
+     */
     @Override
     @Transactional
     public FormResponse submitForm(FormRequest formRequest) throws FormNotFoundException,
             FormAlreadyCompletedException, FormAlreadyCanceledException, ContractFilesNotUploadedException {
 
+
+        log.info("Start submitting form : {}", formRequest);
+
         Form savedForm = this.getFormByUUID(formRequest.getUuid());
 
-        if (FormStatus.COMPLETED.name().equals(savedForm.getFormStatus().name())) {
-            throw new FormAlreadyCompletedException("Form with uuid [" + formRequest.getUuid() + "] already completed !");
-        }
-
-        if (FormStatus.CANCELED.name().equals(savedForm.getFormStatus().name())) {
-            throw new FormAlreadyCanceledException("Form with uuid [" + formRequest.getUuid() + "] already canceled !");
-        }
+        FormActionValidator.checkActionValidity(savedForm, formRequest.getUuid());
 
         if (savedForm.getFormFiles()
                 .stream()
@@ -62,6 +63,9 @@ public class FormService implements IFormService {
         return this.mapToFormDTO(updatedForm, FileService.mapToFileDTO(updatedForm.getFormFiles()));
     }
 
+    /**
+     * #{@inheritDoc}
+     */
     @Override
     public FormResponse initializeForm() {
 
@@ -106,6 +110,9 @@ public class FormService implements IFormService {
         return this.mapToFormDTO(this.formRepository.save(form), Collections.emptyList());
     }
 
+    /**
+     * #{@inheritDoc}
+     */
     @Override
     public Page<FormResponse> getAllForms(int offset, int pageSize) {
 
@@ -119,6 +126,9 @@ public class FormService implements IFormService {
 
     }
 
+    /**
+     * #{@inheritDoc}
+     */
     @Override
     public FormResponse getFormById(String id) throws FormNotFoundException {
 
@@ -127,12 +137,18 @@ public class FormService implements IFormService {
                 .orElseThrow(() -> new FormNotFoundException("Form Not Found"));
     }
 
+    /**
+     * #{@inheritDoc}
+     */
     @Override
     public Form getFormById(Long id) throws FormNotFoundException {
         return this.formRepository.findById(id)
                 .orElseThrow(() -> new FormNotFoundException("Form Not Found"));
     }
 
+    /**
+     * #{@inheritDoc}
+     */
     @Override
     public Form getFormByUUID(String uuid) throws FormNotFoundException {
         return this.formRepository.findByUuid(uuid).orElseThrow(() -> new FormNotFoundException("Form w Not Found"));

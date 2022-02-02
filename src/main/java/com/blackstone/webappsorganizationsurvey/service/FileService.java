@@ -5,10 +5,8 @@ import com.blackstone.webappsorganizationsurvey.dto.FileResponse;
 import com.blackstone.webappsorganizationsurvey.entity.Form;
 import com.blackstone.webappsorganizationsurvey.entity.FormFile;
 import com.blackstone.webappsorganizationsurvey.entity.enums.FileType;
-import com.blackstone.webappsorganizationsurvey.entity.enums.FormStatus;
-import com.blackstone.webappsorganizationsurvey.exception.FormAlreadyCanceledException;
-import com.blackstone.webappsorganizationsurvey.exception.FormAlreadyCompletedException;
 import com.blackstone.webappsorganizationsurvey.repository.FormFileRepository;
+import com.blackstone.webappsorganizationsurvey.util.FormActionValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -28,25 +26,29 @@ public class FileService implements IFileService {
     private final IFormService formService;
     private final FormFileRepository formFileRepository;
 
+
+    /**
+     * #{@inheritDoc}
+     */
     @Override
     public List<FileResponse> upload(List<MultipartFile> files, FileType fileType, Long formId) throws Exception {
 
+        log.info("Start uploading {} files to form with ID {}", fileType, formId);
 
         Long formFilesCount = this.formFileRepository.countAllByForm_IdAndFileType(formId, fileType);
+
+        log.info("Found {} files of type {} already uploaded", formFilesCount, fileType);
 
         Form form = this.formService.getFormById(formId);
 
         if (formFilesCount + files.size() > 7) {
+
+            log.info("Maximum number of {} file types is reached", fileType);
+
             throw new Exception("Maximum number of " + fileType.name() + " files is reached !");
         }
 
-        if (FormStatus.COMPLETED.name().equals(form.getFormStatus().name())) {
-            throw new FormAlreadyCompletedException("Form with uuid [" + form.getUuid() + "] already completed !");
-        }
-
-        if (FormStatus.CANCELED.name().equals(form.getFormStatus().name())) {
-            throw new FormAlreadyCanceledException("Form with uuid [" + form.getUuid() + "] already canceled !");
-        }
+        FormActionValidator.checkActionValidity(form, form.getUuid());
 
         return mapToFileDTO(this.formFileRepository.saveAll(files.stream().map(multipartFile -> {
             try {
@@ -67,6 +69,12 @@ public class FileService implements IFileService {
 
     }
 
+    /**
+     * map File Entity to @{@link FileResponse}
+     *
+     * @param formFiles list of @{@link FormFile}
+     * @return @{@link List} of @{@link FileResponse}
+     */
     public static List<FileResponse> mapToFileDTO(List<FormFile> formFiles) {
 
         return formFiles.stream().map(formFile -> FileResponse.builder()

@@ -11,15 +11,57 @@ import org.springframework.data.domain.Page;
 
 public interface IFormService {
 
+    /**
+     * Submit Form
+     *
+     * @param formRequest @{@link FormRequest}
+     * @return Submitted Form
+     * @throws FormNotFoundException             if form not found
+     * @throws FormAlreadyCompletedException     form already completed
+     * @throws FormAlreadyCanceledException      form already canceled
+     * @throws ContractFilesNotUploadedException no contract files have been uploaded
+     */
     FormResponse submitForm(FormRequest formRequest) throws FormNotFoundException, FormAlreadyCompletedException, FormAlreadyCanceledException, ContractFilesNotUploadedException;
 
+
+    /**
+     * Get list of all forms
+     *
+     * @param offset   @{@link Integer} start page
+     * @param pageSize @{@link Integer} page size
+     * @return paged list of @{@link FormResponse}
+     */
     Page<FormResponse> getAllForms(int offset, int pageSize);
 
+    /**
+     * Get Form By I'd
+     *
+     * @param id form id
+     * @return @{@link FormResponse}
+     * @throws FormNotFoundException if form not found
+     */
     FormResponse getFormById(String id) throws FormNotFoundException;
 
+    /**
+     * Get Form By I'd
+     *
+     * @param id form id
+     * @return @{@link FormResponse}
+     * @throws FormNotFoundException if form not found
+     */
     Form getFormById(Long id) throws FormNotFoundException;
 
+    /**
+     * Get Form By I'd
+     *
+     * @param uuid form uuid
+     * @return @{@link FormResponse}
+     * @throws FormNotFoundException if form not found
+     */
     Form getFormByUUID(String uuid) throws FormNotFoundException;
 
+    /**
+     * @return initialized @{@link FormResponse}
+     */
     FormResponse initializeForm();
 }

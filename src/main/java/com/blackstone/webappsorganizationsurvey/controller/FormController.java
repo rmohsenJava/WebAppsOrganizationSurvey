@@ -32,8 +32,40 @@ public class FormController {
     private final IFormService formService;
     private final IFileService fileService;
 
+    @ApiOperation(value = "Initialize new Form",
+            notes = "Initialize new Form",
+            response = FormResponse.class
+    )
+    @GetMapping("/initialize")
+    @ResponseStatus(HttpStatus.OK)
+    public FormResponse initializeForm() {
+        return this.formService.initializeForm();
+    }
+
+    @ApiOperation(value = "Get survey forms by ID",
+            notes = "Get survey forms by ID",
+            response = FormResponse.class
+
+    )
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public FormResponse getFormById(@PathVariable String id) throws FormNotFoundException {
+        return this.formService.getFormById(id);
+    }
+
+    @ApiOperation(value = "Get AL survey forms",
+            notes = "Get AL survey forms",
+            response = FormResponse.class
+    )
+    @GetMapping("/{offset}/{pageSize}")
+    @ResponseStatus(HttpStatus.OK)
+    public Page<FormResponse> getForms(@PathVariable int offset, @PathVariable int pageSize) {
+        return this.formService.getAllForms(offset, pageSize);
+    }
+
     @ApiOperation(value = "Submit survey form",
-            notes = "Submit Survey form"
+            notes = "Submit Survey form",
+            response = FileResponse.class
     )
     @PostMapping(value = "/file/upload", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @ResponseStatus(HttpStatus.CREATED)
@@ -43,9 +75,9 @@ public class FormController {
         return this.fileService.upload(files, fileType, formId);
     }
 
-
     @ApiOperation(value = "Submit survey form",
-            notes = "Submit Survey form"
+            notes = "Submit Survey form",
+            response = FormResponse.class
     )
     @PostMapping(value = "/submit")
     @ResponseStatus(HttpStatus.CREATED)
@@ -55,31 +87,5 @@ public class FormController {
         return this.formService.submitForm(formRequest);
     }
 
-    @ApiOperation(value = "Initialize new Form",
-            notes = "Initialize new Form"
-    )
-    @GetMapping("/initialize")
-    @ResponseStatus(HttpStatus.OK)
-    public FormResponse initializeForm() {
-        return this.formService.initializeForm();
-    }
 
-
-    @ApiOperation(value = "Get AL survey forms",
-            notes = "Get AL survey forms"
-    )
-    @GetMapping("/{offset}/{pageSize}")
-    @ResponseStatus(HttpStatus.OK)
-    public Page<FormResponse> getForms(@PathVariable int offset, @PathVariable int pageSize) {
-        return this.formService.getAllForms(offset, pageSize);
-    }
-
-    @ApiOperation(value = "Get survey forms by ID",
-            notes = "Get survey forms by ID"
-    )
-    @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public FormResponse getFormById(@PathVariable String id) throws FormNotFoundException {
-        return this.formService.getFormById(id);
-    }
 }
