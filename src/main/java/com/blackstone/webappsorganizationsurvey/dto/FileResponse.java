@@ -20,5 +20,5 @@ public class FileResponse {
 
     private FileType fileType;
 
-    private Long fileSize;
+    private String fileSize;
 }

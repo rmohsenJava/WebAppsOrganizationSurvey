@@ -96,7 +96,7 @@ public class FileService implements IFileService {
                         .fileType(formFile.getFileType())
                         .type(formFile.getType())
                         .name(formFile.getName())
-                        .fileSize(formFile.getFileSize())
+                        .fileSize(formFile.getFileSize() / 1024 + " كيلوبايت ")
                         .build())
                 .collect(Collectors.toList());
     }
