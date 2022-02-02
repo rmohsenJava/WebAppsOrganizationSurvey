@@ -1,5 +1,6 @@
 package com.blackstone.webappsorganizationsurvey.entity;
 
+import com.blackstone.webappsorganizationsurvey.entity.enums.FormStatus;
 import com.blackstone.webappsorganizationsurvey.entity.enums.ServiceFollowUp;
 import com.blackstone.webappsorganizationsurvey.util.CompanyDevelopmentFeesJsonConverter;
 import com.blackstone.webappsorganizationsurvey.util.CompanyJsonConverter;
@@ -28,6 +29,10 @@ public class Form {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotNull(message = "UUID Can not be null !")
+    @Column(unique = true, updatable = false)
+    private String uuid;
 
     @Column(nullable = false, name = "organization_name")
     @NotNull(message = "Organization name can not be null!")
@@ -88,6 +93,11 @@ public class Form {
     @Column(nullable = false, name = "service_follow_up")
     @NotNull(message = "Follow up can not be null !")
     private ServiceFollowUp serviceFollowUp;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, name = "form_status")
+    @NotNull(message = "Status  can not be null !")
+    private FormStatus formStatus;
 
     @Column(name = "service_follow_up_details")
     private String serviceFollowUpDetails;

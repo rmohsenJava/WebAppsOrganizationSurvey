@@ -29,6 +29,24 @@ public class SurveyFormExceptionHandler {
                 request.getDescription(false), HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(FormAlreadyCompletedException.class)
+    public ResponseEntity<Object> formAlreadyCompletedExceptionHandling(FormAlreadyCompletedException exception, WebRequest request) {
+        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), exception.getMessage(),
+                request.getDescription(false), HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(FormAlreadyCanceledException.class)
+    public ResponseEntity<Object> formAlreadyCanceledExceptionHandling(FormAlreadyCanceledException exception, WebRequest request) {
+        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), exception.getMessage(),
+                request.getDescription(false), HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ContractFilesNotUploadedException.class)
+    public ResponseEntity<Object> contractFilesNotUploadedExceptionHandling(ContractFilesNotUploadedException exception, WebRequest request) {
+        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), exception.getMessage(),
+                request.getDescription(false), HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> methodArgumentNotValidExceptionHandling(MethodArgumentNotValidException exception) {
 

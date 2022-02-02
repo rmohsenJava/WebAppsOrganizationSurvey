@@ -4,13 +4,15 @@ import com.blackstone.webappsorganizationsurvey.entity.Company;
 import com.blackstone.webappsorganizationsurvey.entity.CompanyDevelopmentFees;
 import com.blackstone.webappsorganizationsurvey.entity.WebsiteMaintenanceFees;
 import com.blackstone.webappsorganizationsurvey.entity.WebsiteSupervisor;
+import com.blackstone.webappsorganizationsurvey.entity.enums.FormStatus;
 import com.blackstone.webappsorganizationsurvey.entity.enums.ServiceFollowUp;
 import lombok.*;
 import org.hibernate.validator.constraints.URL;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.*;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -26,8 +28,15 @@ public class FormRequest {
     private String organizationName;
 
     @NotNull(message = "Website Url can not be null!")
+    @NotEmpty
     @URL(message = "Website URL Must be a valid URL!")
     private String webSiteURL;
+
+    @NotNull(message = "Status  can not be null !")
+    private FormStatus formStatus;
+
+    @NotNull(message = "UUID can not be null!")
+    private String uuid;
 
     @Valid
     private List<Company> companies;

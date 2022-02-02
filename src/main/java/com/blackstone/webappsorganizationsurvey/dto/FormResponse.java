@@ -4,6 +4,7 @@ import com.blackstone.webappsorganizationsurvey.entity.Company;
 import com.blackstone.webappsorganizationsurvey.entity.CompanyDevelopmentFees;
 import com.blackstone.webappsorganizationsurvey.entity.WebsiteMaintenanceFees;
 import com.blackstone.webappsorganizationsurvey.entity.WebsiteSupervisor;
+import com.blackstone.webappsorganizationsurvey.entity.enums.FormStatus;
 import com.blackstone.webappsorganizationsurvey.entity.enums.ServiceFollowUp;
 import lombok.*;
 
@@ -20,9 +21,13 @@ public class FormResponse {
 
     private Long id;
 
+    private String uuid;
+
     private String organizationName;
 
     private String webSiteURL;
+
+    private FormStatus formStatus;
 
     private List<Company> companies;
 

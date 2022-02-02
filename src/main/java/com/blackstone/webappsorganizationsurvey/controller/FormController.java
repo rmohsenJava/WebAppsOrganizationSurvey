@@ -1,10 +1,15 @@
 package com.blackstone.webappsorganizationsurvey.controller;
 
 
+import com.blackstone.webappsorganizationsurvey.dto.FileResponse;
 import com.blackstone.webappsorganizationsurvey.dto.FormRequest;
 import com.blackstone.webappsorganizationsurvey.dto.FormResponse;
-import com.blackstone.webappsorganizationsurvey.entity.Form;
+import com.blackstone.webappsorganizationsurvey.entity.enums.FileType;
+import com.blackstone.webappsorganizationsurvey.exception.ContractFilesNotUploadedException;
+import com.blackstone.webappsorganizationsurvey.exception.FormAlreadyCanceledException;
+import com.blackstone.webappsorganizationsurvey.exception.FormAlreadyCompletedException;
 import com.blackstone.webappsorganizationsurvey.exception.FormNotFoundException;
+import com.blackstone.webappsorganizationsurvey.service.IFileService;
 import com.blackstone.webappsorganizationsurvey.service.IFormService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +20,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("v1/survey/form")
@@ -22,20 +30,38 @@ import org.springframework.web.multipart.MultipartFile;
 public class FormController {
 
     private final IFormService formService;
+    private final IFileService fileService;
 
     @ApiOperation(value = "Submit survey form",
             notes = "Submit Survey form"
     )
-    @PostMapping(value = "/submit", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "/file/upload", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @ResponseStatus(HttpStatus.CREATED)
-    public Form submitForm(@RequestPart(value = "contractFiles") MultipartFile[] contractFiles,
-                           @RequestPart(value = "systemImages", required = false) MultipartFile[] systemImages,
-                           @RequestPart(value = "securityProtocolsDocuments", required = false)
-                                   MultipartFile[] securityProtocolsDocuments,
-                           @RequestParam("form") FormRequest formRequest) throws Exception {
+    public List<FileResponse> uploadFile(@RequestPart("file") List<MultipartFile> files,
+                                         @RequestParam("type") FileType fileType,
+                                         @RequestParam("formId") Long formId) throws Exception {
+        return this.fileService.upload(files, fileType, formId);
+    }
 
-        return this.formService
-                .submitForm(formRequest, contractFiles, systemImages, securityProtocolsDocuments);
+
+    @ApiOperation(value = "Submit survey form",
+            notes = "Submit Survey form"
+    )
+    @PostMapping(value = "/submit")
+    @ResponseStatus(HttpStatus.CREATED)
+    public FormResponse submitForm(@RequestBody @Valid FormRequest formRequest) throws FormNotFoundException,
+            FormAlreadyCompletedException, FormAlreadyCanceledException, ContractFilesNotUploadedException {
+
+        return this.formService.submitForm(formRequest);
+    }
+
+    @ApiOperation(value = "Initialize new Form",
+            notes = "Initialize new Form"
+    )
+    @GetMapping("/initialize")
+    @ResponseStatus(HttpStatus.OK)
+    public FormResponse initializeForm() {
+        return this.formService.initializeForm();
     }
 
 
@@ -45,7 +71,7 @@ public class FormController {
     @GetMapping("/{offset}/{pageSize}")
     @ResponseStatus(HttpStatus.OK)
     public Page<FormResponse> getForms(@PathVariable int offset, @PathVariable int pageSize) {
-        return this.formService.getForms(offset, pageSize);
+        return this.formService.getAllForms(offset, pageSize);
     }
 
     @ApiOperation(value = "Get survey forms by ID",

@@ -4,20 +4,26 @@ import com.blackstone.webappsorganizationsurvey.dto.FileResponse;
 import com.blackstone.webappsorganizationsurvey.dto.FormRequest;
 import com.blackstone.webappsorganizationsurvey.dto.FormResponse;
 import com.blackstone.webappsorganizationsurvey.entity.Form;
-import com.blackstone.webappsorganizationsurvey.entity.FormFile;
+import com.blackstone.webappsorganizationsurvey.entity.enums.FileType;
+import com.blackstone.webappsorganizationsurvey.entity.enums.FormStatus;
+import com.blackstone.webappsorganizationsurvey.entity.enums.ServiceFollowUp;
+import com.blackstone.webappsorganizationsurvey.exception.ContractFilesNotUploadedException;
+import com.blackstone.webappsorganizationsurvey.exception.FormAlreadyCanceledException;
+import com.blackstone.webappsorganizationsurvey.exception.FormAlreadyCompletedException;
 import com.blackstone.webappsorganizationsurvey.exception.FormNotFoundException;
-import com.blackstone.webappsorganizationsurvey.repository.FormFileRepository;
 import com.blackstone.webappsorganizationsurvey.repository.FormRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,35 +32,89 @@ import java.util.stream.Collectors;
 public class FormService implements IFormService {
 
     private final FormRepository formRepository;
-    private final IFileService fileService;
-    private final FormFileRepository formFileRepository;
-
 
     @Override
     @Transactional
-    public Form submitForm(FormRequest formRequest,
-                           MultipartFile[] contractFiles,
-                           MultipartFile[] systemImages, MultipartFile[] securityProtocolsDocuments) throws Exception {
+    public FormResponse submitForm(FormRequest formRequest) throws FormNotFoundException,
+            FormAlreadyCompletedException, FormAlreadyCanceledException, ContractFilesNotUploadedException {
 
-        Form savedForm = this.formRepository.save(this.mapToEntity(formRequest));
+        Form savedForm = this.getFormByUUID(formRequest.getUuid());
 
-        List<FormFile> formFiles = this.fileService.mapToEntity(contractFiles, systemImages, securityProtocolsDocuments,
-                savedForm);
+        if (FormStatus.COMPLETED.name().equals(savedForm.getFormStatus().name())) {
+            throw new FormAlreadyCompletedException("Form with uuid [" + formRequest.getUuid() + "] already completed !");
+        }
 
-        formFileRepository.saveAll(formFiles);
+        if (FormStatus.CANCELED.name().equals(savedForm.getFormStatus().name())) {
+            throw new FormAlreadyCanceledException("Form with uuid [" + formRequest.getUuid() + "] already canceled !");
+        }
 
-        return savedForm;
+        if (savedForm.getFormFiles()
+                .stream()
+                .noneMatch(type -> type.getFileType()
+                        .name().equals(FileType.SYSTEM_CONTRACT_FILES.name()))) {
+            throw new ContractFilesNotUploadedException("System Contract Files are Required, Please upload required files first !");
+        }
+
+        this.mapToFormEntity(savedForm, formRequest);
+
+        Form updatedForm = this.formRepository.save(savedForm);
+
+        return this.mapToFormDTO(updatedForm, FileService.mapToFileDTO(updatedForm.getFormFiles()));
     }
 
     @Override
-    public Page<FormResponse> getForms(int offset, int pageSize) {
+    public FormResponse initializeForm() {
 
-        PageRequest pageRequest = PageRequest.of(offset, pageSize);
+        Form form = Form.builder().companies(Collections.emptyList())
+                .customerSatisfactionFeatureDetails("")
+                .companyDevelopmentFees(Collections.emptyList())
+                .websiteMaintenanceFees(Collections.emptyList())
+                .websiteSupervisors(Collections.emptyList())
+                .uuid(UUID.randomUUID().toString())
+                .formStatus(FormStatus.IN_PROGRESS)
+                .hasCustomerSatisfactionFeature(false)
+                .continuousUpdate(false)
+                .developedUsingLatestStandard(false)
+                .hasComplainFeature(false)
+                .hasCustomerAwareness(false)
+                .hasSocialMediaAccounts(false)
+                .hasTrackingFeature(false)
+                .hasWebsiteExtraFees(false)
+                .websiteDomainNameFees((float) 0)
+                .howMaintenanceApplied("")
+                .latestStandardDetails("")
+                .organizationName("Blackstone EIT")
+                .serviceFollowUp(ServiceFollowUp.AUTOMATIC)
+                .preferStandardDevelopmentInstruction(false)
+                .securityProtocolsApplied(false)
+                .sourceCodeObtained(false)
+                .suggestionsDetails("")
+                .suggestionsToShare(false)
+                .websiteExtraFeesDetails("")
+                .websiteHostDetails("")
+                .websiteProgrammingLanguage("")
+                .websiteSoftwareCompany("")
+                .webSiteURL("https://xyz.com")
+                .serviceFollowUpDetails("")
+                .complainFeatureDetails("")
+                .socialMediaAccountsDetails("")
+                .customerAwarenessDetails("")
+                .trackingFeatureDetails("")
+                .continuousUpdateDetails("")
+                .build();
+
+        return this.mapToFormDTO(this.formRepository.save(form), Collections.emptyList());
+    }
+
+    @Override
+    public Page<FormResponse> getAllForms(int offset, int pageSize) {
+
+        PageRequest pageRequest = PageRequest.of(offset, pageSize, Sort.by("submissionDate").descending());
 
         Page<Form> formList = this.formRepository.findAll(pageRequest);
 
         return new PageImpl<>(formList.getContent().stream()
-                .map(form -> mapToDTO(form, mapToFileDTO(form.getFormFiles())))
+                .map(form -> mapToFormDTO(form, FileService.mapToFileDTO(form.getFormFiles())))
                 .collect(Collectors.toList()), pageRequest, formList.getTotalElements());
 
     }
@@ -63,52 +123,62 @@ public class FormService implements IFormService {
     public FormResponse getFormById(String id) throws FormNotFoundException {
 
         return this.formRepository.findById(Long.parseLong(id))
-                .map(formMap -> this.mapToDTO(formMap, this.mapToFileDTO(formMap.getFormFiles())))
+                .map(formMap -> this.mapToFormDTO(formMap, FileService.mapToFileDTO(formMap.getFormFiles())))
                 .orElseThrow(() -> new FormNotFoundException("Form Not Found"));
     }
 
-
-    private Form mapToEntity(FormRequest formRequest) {
-
-        return Form.builder()
-                .companies(formRequest.getCompanies())
-                .customerSatisfactionFeatureDetails(formRequest.getCustomerSatisfactionFeatureDetails())
-                .companyDevelopmentFees(formRequest.getCompanyDevelopmentFees())
-                .websiteMaintenanceFees(formRequest.getWebsiteMaintenanceFees())
-                .websiteSupervisors(formRequest.getWebsiteSupervisors())
-                .hasCustomerSatisfactionFeature(formRequest.getHasCustomerSatisfactionFeature())
-                .continuousUpdate(formRequest.getContinuousUpdate())
-                .developedUsingLatestStandard(formRequest.getDevelopedUsingLatestStandard())
-                .hasComplainFeature(formRequest.getHasComplainFeature())
-                .hasCustomerAwareness(formRequest.getHasCustomerAwareness())
-                .hasSocialMediaAccounts(formRequest.getHasSocialMediaAccounts())
-                .hasTrackingFeature(formRequest.getHasTrackingFeature())
-                .hasWebsiteExtraFees(formRequest.getHasWebsiteExtraFees())
-                .websiteDomainNameFees(formRequest.getWebsiteDomainNameFees())
-                .howMaintenanceApplied(formRequest.getHowMaintenanceApplied())
-                .latestStandardDetails(formRequest.getLatestStandardDetails())
-                .organizationName(formRequest.getOrganizationName())
-                .serviceFollowUp(formRequest.getServiceFollowUp())
-                .preferStandardDevelopmentInstruction(formRequest.getPreferStandardDevelopmentInstruction())
-                .securityProtocolsApplied(formRequest.getSecurityProtocolsApplied())
-                .sourceCodeObtained(formRequest.getSourceCodeObtained())
-                .suggestionsDetails(formRequest.getSuggestionsDetails())
-                .suggestionsToShare(formRequest.getSuggestionsToShare())
-                .websiteExtraFeesDetails(formRequest.getWebsiteExtraFeesDetails())
-                .websiteHostDetails(formRequest.getWebsiteHostDetails())
-                .websiteProgrammingLanguage(formRequest.getWebsiteProgrammingLanguage())
-                .websiteSoftwareCompany(formRequest.getWebsiteSoftwareCompany())
-                .webSiteURL(formRequest.getWebSiteURL())
-                .serviceFollowUpDetails(formRequest.getServiceFollowUpDetails())
-                .complainFeatureDetails(formRequest.getComplainFeatureDetails())
-                .socialMediaAccountsDetails(formRequest.getSocialMediaAccountsDetails())
-                .customerAwarenessDetails(formRequest.getCustomerAwarenessDetails())
-                .trackingFeatureDetails(formRequest.getTrackingFeatureDetails())
-                .continuousUpdateDetails(formRequest.getContinuousUpdateDetails())
-                .build();
+    @Override
+    public Form getFormById(Long id) throws FormNotFoundException {
+        return this.formRepository.findById(id)
+                .orElseThrow(() -> new FormNotFoundException("Form Not Found"));
     }
 
-    private FormResponse mapToDTO(Form form, List<FileResponse> fileResponses) {
+    @Override
+    public Form getFormByUUID(String uuid) throws FormNotFoundException {
+        return this.formRepository.findByUuid(uuid).orElseThrow(() -> new FormNotFoundException("Form w Not Found"));
+    }
+
+    private void mapToFormEntity(Form savedForm, FormRequest formRequest) {
+
+        savedForm.setCompanies(formRequest.getCompanies());
+        savedForm.setFormStatus(FormStatus.COMPLETED);
+        savedForm.setCustomerSatisfactionFeatureDetails(formRequest.getCustomerSatisfactionFeatureDetails());
+        savedForm.setCompanyDevelopmentFees(formRequest.getCompanyDevelopmentFees());
+        savedForm.setWebsiteMaintenanceFees(formRequest.getWebsiteMaintenanceFees());
+        savedForm.setWebsiteSupervisors(formRequest.getWebsiteSupervisors());
+        savedForm.setHasCustomerSatisfactionFeature(formRequest.getHasCustomerSatisfactionFeature());
+        savedForm.setContinuousUpdate(formRequest.getContinuousUpdate());
+        savedForm.setDevelopedUsingLatestStandard(formRequest.getDevelopedUsingLatestStandard());
+        savedForm.setHasComplainFeature(formRequest.getHasComplainFeature());
+        savedForm.setHasCustomerAwareness(formRequest.getHasCustomerAwareness());
+        savedForm.setHasSocialMediaAccounts(formRequest.getHasSocialMediaAccounts());
+        savedForm.setHasTrackingFeature(formRequest.getHasTrackingFeature());
+        savedForm.setHasWebsiteExtraFees(formRequest.getHasWebsiteExtraFees());
+        savedForm.setWebsiteDomainNameFees(formRequest.getWebsiteDomainNameFees());
+        savedForm.setHowMaintenanceApplied(formRequest.getHowMaintenanceApplied());
+        savedForm.setLatestStandardDetails(formRequest.getLatestStandardDetails());
+        savedForm.setOrganizationName(formRequest.getOrganizationName());
+        savedForm.setServiceFollowUp(formRequest.getServiceFollowUp());
+        savedForm.setPreferStandardDevelopmentInstruction(formRequest.getPreferStandardDevelopmentInstruction());
+        savedForm.setSecurityProtocolsApplied(formRequest.getSecurityProtocolsApplied());
+        savedForm.setSourceCodeObtained(formRequest.getSourceCodeObtained());
+        savedForm.setSuggestionsDetails(formRequest.getSuggestionsDetails());
+        savedForm.setSuggestionsToShare(formRequest.getSuggestionsToShare());
+        savedForm.setWebsiteExtraFeesDetails(formRequest.getWebsiteExtraFeesDetails());
+        savedForm.setWebsiteHostDetails(formRequest.getWebsiteHostDetails());
+        savedForm.setWebsiteProgrammingLanguage(formRequest.getWebsiteProgrammingLanguage());
+        savedForm.setWebsiteSoftwareCompany(formRequest.getWebsiteSoftwareCompany());
+        savedForm.setWebSiteURL(formRequest.getWebSiteURL());
+        savedForm.setServiceFollowUpDetails(formRequest.getServiceFollowUpDetails());
+        savedForm.setComplainFeatureDetails(formRequest.getComplainFeatureDetails());
+        savedForm.setSocialMediaAccountsDetails(formRequest.getSocialMediaAccountsDetails());
+        savedForm.setCustomerAwarenessDetails(formRequest.getCustomerAwarenessDetails());
+        savedForm.setTrackingFeatureDetails(formRequest.getTrackingFeatureDetails());
+        savedForm.setContinuousUpdateDetails(formRequest.getContinuousUpdateDetails());
+
+    }
+
+    private FormResponse mapToFormDTO(Form form, List<FileResponse> fileResponses) {
 
         return FormResponse.builder()
                 .id(form.getId())
@@ -116,6 +186,8 @@ public class FormService implements IFormService {
                 .customerSatisfactionFeatureDetails(form.getCustomerSatisfactionFeatureDetails())
                 .companyDevelopmentFees(form.getCompanyDevelopmentFees())
                 .websiteMaintenanceFees(form.getWebsiteMaintenanceFees())
+                .uuid(form.getUuid())
+                .formStatus(form.getFormStatus())
                 .websiteSupervisors(form.getWebsiteSupervisors())
                 .hasCustomerSatisfactionFeature(form.getHasCustomerSatisfactionFeature())
                 .continuousUpdate(form.getContinuousUpdate())
@@ -151,14 +223,4 @@ public class FormService implements IFormService {
                 .build();
     }
 
-    private List<FileResponse> mapToFileDTO(List<FormFile> formFiles) {
-
-        return formFiles.stream().map(formFile -> FileResponse.builder()
-                        .id(formFile.getId())
-                        .fileType(formFile.getFileType())
-                        .type(formFile.getType())
-                        .name(formFile.getName())
-                        .build())
-                .collect(Collectors.toList());
-    }
 }
