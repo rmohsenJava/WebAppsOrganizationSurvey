@@ -28,13 +28,17 @@ public class FormFile {
     private String type;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, name = "file_type")
+    @Column(nullable = false)
     private FileType fileType;
+
+    @NotNull(message = "File size can not be null")
+    @Column(nullable = false)
+    private Long fileSize;
 
     @Lob
     private byte[] data;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "form_id", referencedColumnName = "id", nullable = false)
     @ToString.Exclude
     private Form form;

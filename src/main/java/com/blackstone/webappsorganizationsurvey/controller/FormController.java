@@ -76,6 +76,12 @@ public class FormController {
         return this.fileService.upload(files, fileType, formId);
     }
 
+    @DeleteMapping(value = "/file/{id}")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void removeFile(@PathVariable Integer id) throws Exception {
+        this.fileService.removeFile(id);
+    }
+
     @ApiOperation(value = "Submit survey form",
             notes = "Submit Survey form",
             response = FormResponse.class

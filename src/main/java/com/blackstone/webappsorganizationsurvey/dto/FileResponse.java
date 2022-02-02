@@ -19,4 +19,6 @@ public class FileResponse {
     private String type;
 
     private FileType fileType;
+
+    private Long fileSize;
 }

@@ -10,6 +10,7 @@ import com.blackstone.webappsorganizationsurvey.util.FormActionValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +27,18 @@ public class FileService implements IFileService {
     private final IFormService formService;
     private final FormFileRepository formFileRepository;
 
+    /**
+     * #{@inheritDoc}
+     */
+    @Override
+    @Transactional
+    public void removeFile(Integer id) throws Exception {
+
+        FormFile formFile = this.formFileRepository.findById(id)
+                .orElseThrow(() -> new Exception("File Not Found"));
+
+        this.formFileRepository.delete(formFile);
+    }
 
     /**
      * #{@inheritDoc}
@@ -58,6 +71,7 @@ public class FileService implements IFileService {
                                         .getOriginalFilename())))
                         .type(multipartFile.getContentType())
                         .fileType(fileType)
+                        .fileSize(multipartFile.getSize())
                         .data(multipartFile.getBytes())
                         .form(form).build();
 
@@ -82,6 +96,7 @@ public class FileService implements IFileService {
                         .fileType(formFile.getFileType())
                         .type(formFile.getType())
                         .name(formFile.getName())
+                        .fileSize(formFile.getFileSize())
                         .build())
                 .collect(Collectors.toList());
     }

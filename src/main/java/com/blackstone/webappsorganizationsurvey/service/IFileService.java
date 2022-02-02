@@ -19,4 +19,12 @@ public interface IFileService {
      */
     List<FileResponse> upload(List<MultipartFile> files, FileType fileType, Long formId) throws Exception;
 
+
+    /**
+     * Delete File
+     *
+     * @param id file id
+     * @throws Exception if file not found
+     */
+    void removeFile(Integer id) throws Exception;
 }
