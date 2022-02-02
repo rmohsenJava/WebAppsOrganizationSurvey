@@ -12,4 +12,6 @@ import java.util.List;
 public interface FormFileRepository extends JpaRepository<FormFile, Integer> {
 
     List<FormFile> findAllByForm_IdAndFileType(Long formId, FileType fileType);
+
+    Long countAllByForm_IdAndFileType(Long formId, FileType fileType);
 }

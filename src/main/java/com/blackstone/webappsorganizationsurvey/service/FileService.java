@@ -31,11 +31,12 @@ public class FileService implements IFileService {
     @Override
     public List<FileResponse> upload(List<MultipartFile> files, FileType fileType, Long formId) throws Exception {
 
-        List<FormFile> formFiles = this.formFileRepository.findAllByForm_IdAndFileType(formId, fileType);
+
+        Long formFilesCount = this.formFileRepository.countAllByForm_IdAndFileType(formId, fileType);
 
         Form form = this.formService.getFormById(formId);
 
-        if (formFiles.size() + files.size() > 7) {
+        if (formFilesCount + files.size() > 7) {
             throw new Exception("Maximum number of " + fileType.name() + " files is reached !");
         }
 
