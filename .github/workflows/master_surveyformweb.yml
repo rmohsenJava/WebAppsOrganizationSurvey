@@ -49,5 +49,5 @@ jobs:
         with:
           app-name: 'SurveyFormWeb'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_61580B867A7D40C194FCF185F628EE6D }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_A5ED484C328A4A22B9B75E19B0C5ACC0 }}
           package: '*.jar'
