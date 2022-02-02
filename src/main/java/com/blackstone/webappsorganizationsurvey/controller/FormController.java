@@ -5,6 +5,7 @@ import com.blackstone.webappsorganizationsurvey.dto.FileResponse;
 import com.blackstone.webappsorganizationsurvey.dto.FormRequest;
 import com.blackstone.webappsorganizationsurvey.dto.FormResponse;
 import com.blackstone.webappsorganizationsurvey.entity.enums.FileType;
+import com.blackstone.webappsorganizationsurvey.entity.enums.FormStatus;
 import com.blackstone.webappsorganizationsurvey.exception.ContractFilesNotUploadedException;
 import com.blackstone.webappsorganizationsurvey.exception.FormAlreadyCanceledException;
 import com.blackstone.webappsorganizationsurvey.exception.FormAlreadyCompletedException;
@@ -59,8 +60,8 @@ public class FormController {
     )
     @GetMapping("/{offset}/{pageSize}")
     @ResponseStatus(HttpStatus.OK)
-    public Page<FormResponse> getForms(@PathVariable int offset, @PathVariable int pageSize) {
-        return this.formService.getAllForms(offset, pageSize);
+    public Page<FormResponse> getForms(@PathVariable int offset, @PathVariable int pageSize, @RequestParam FormStatus formStatus) {
+        return this.formService.getAllForms(offset, pageSize, formStatus);
     }
 
     @ApiOperation(value = "Submit survey form",

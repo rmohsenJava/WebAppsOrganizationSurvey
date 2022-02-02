@@ -3,6 +3,7 @@ package com.blackstone.webappsorganizationsurvey.service;
 import com.blackstone.webappsorganizationsurvey.dto.FormRequest;
 import com.blackstone.webappsorganizationsurvey.dto.FormResponse;
 import com.blackstone.webappsorganizationsurvey.entity.Form;
+import com.blackstone.webappsorganizationsurvey.entity.enums.FormStatus;
 import com.blackstone.webappsorganizationsurvey.exception.ContractFilesNotUploadedException;
 import com.blackstone.webappsorganizationsurvey.exception.FormAlreadyCanceledException;
 import com.blackstone.webappsorganizationsurvey.exception.FormAlreadyCompletedException;
@@ -27,11 +28,12 @@ public interface IFormService {
     /**
      * Get list of all forms
      *
-     * @param offset   @{@link Integer} start page
-     * @param pageSize @{@link Integer} page size
+     * @param offset     @{@link Integer} start page
+     * @param pageSize   @{@link Integer} page size
+     * @param formStatus @{@link FormStatus} formStatus
      * @return paged list of @{@link FormResponse}
      */
-    Page<FormResponse> getAllForms(int offset, int pageSize);
+    Page<FormResponse> getAllForms(int offset, int pageSize, FormStatus formStatus);
 
     /**
      * Get Form By I'd

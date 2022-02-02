@@ -114,11 +114,11 @@ public class FormService implements IFormService {
      * #{@inheritDoc}
      */
     @Override
-    public Page<FormResponse> getAllForms(int offset, int pageSize) {
+    public Page<FormResponse> getAllForms(int offset, int pageSize, FormStatus formStatus) {
 
         PageRequest pageRequest = PageRequest.of(offset, pageSize, Sort.by("submissionDate").descending());
 
-        Page<Form> formList = this.formRepository.findAll(pageRequest);
+        Page<Form> formList = this.formRepository.findAllByFormStatus(pageRequest, formStatus);
 
         return new PageImpl<>(formList.getContent().stream()
                 .map(form -> mapToFormDTO(form, FileService.mapToFileDTO(form.getFormFiles())))
