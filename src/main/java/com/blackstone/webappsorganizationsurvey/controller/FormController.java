@@ -28,6 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("v1/survey/form")
 @Validated
+@CrossOrigin(origins = "*")
 public class FormController {
 
     private final IFormService formService;
