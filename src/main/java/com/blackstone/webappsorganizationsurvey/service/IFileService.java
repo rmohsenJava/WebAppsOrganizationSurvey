@@ -5,6 +5,7 @@ import com.blackstone.webappsorganizationsurvey.entity.enums.FileType;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IFileService {
 
@@ -26,5 +27,5 @@ public interface IFileService {
      * @param id file id
      * @throws Exception if file not found
      */
-    void removeFile(Integer id) throws Exception;
+    Map<String, Integer> removeFile(Integer id) throws Exception;
 }

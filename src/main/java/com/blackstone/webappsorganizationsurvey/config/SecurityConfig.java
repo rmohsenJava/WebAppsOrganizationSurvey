@@ -44,6 +44,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/webjars/**", "/swagger/**",
                         "/v1/survey/form/initialize",
                         "/v1/survey/form/file/upload",
+                        "/v1/survey/form/file/**",
                         "/v1/survey/form/submit").permitAll()
                 .anyRequest().authenticated().and().
                 exceptionHandling().and().sessionManagement()

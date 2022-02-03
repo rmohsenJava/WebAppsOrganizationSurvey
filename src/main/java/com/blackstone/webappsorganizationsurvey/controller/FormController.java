@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -79,8 +80,8 @@ public class FormController {
 
     @DeleteMapping(value = "/file/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void removeFile(@PathVariable Integer id) throws Exception {
-        this.fileService.removeFile(id);
+    public Map<String, Integer> removeFile(@PathVariable Integer id) throws Exception {
+        return this.fileService.removeFile(id);
     }
 
     @ApiOperation(value = "Submit survey form",
