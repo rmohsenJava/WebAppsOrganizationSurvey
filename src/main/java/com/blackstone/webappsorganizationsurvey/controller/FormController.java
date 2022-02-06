@@ -78,7 +78,6 @@ public class FormController {
     }
 
     @DeleteMapping(value = "/file/{id}")
-    @CrossOrigin(origins = "*", methods = RequestMethod.DELETE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public Map<String, Integer> removeFile(@PathVariable Integer id) throws Exception {
         return this.fileService.removeFile(id);
