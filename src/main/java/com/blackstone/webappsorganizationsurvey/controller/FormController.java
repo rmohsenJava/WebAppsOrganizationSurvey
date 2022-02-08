@@ -65,8 +65,8 @@ public class FormController {
         return this.formService.getAllForms(offset, pageSize, formStatus);
     }
 
-    @ApiOperation(value = "Submit survey form",
-            notes = "Submit Survey form",
+    @ApiOperation(value = "Upload File",
+            notes = "Upload File",
             response = FileResponse.class
     )
     @PostMapping(value = "/file/upload", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
