@@ -2,6 +2,7 @@ package com.blackstone.webappsorganizationsurvey.service;
 
 import com.blackstone.webappsorganizationsurvey.dto.FileResponse;
 import com.blackstone.webappsorganizationsurvey.entity.enums.FileType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -28,4 +29,7 @@ public interface IFileService {
      * @throws Exception if file not found
      */
     Map<String, Integer> removeFile(Integer id) throws Exception;
+
+
+    ResponseEntity<byte[]> downLoadFile(Integer id) throws Exception;
 }

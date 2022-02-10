@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -75,6 +76,16 @@ public class FormController {
                                          @RequestParam("type") FileType fileType,
                                          @RequestParam("formId") Long formId) throws Exception {
         return this.fileService.upload(files, fileType, formId);
+    }
+
+    @ApiOperation(value = "Download File",
+            notes = "Download File",
+            response = FileResponse.class
+    )
+    @GetMapping(value = "/{id}/download")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<byte[]> downloadFile(@PathVariable Integer id) throws Exception {
+        return this.fileService.downLoadFile(id);
     }
 
     @DeleteMapping(value = "/file/{id}")

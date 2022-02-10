@@ -5,10 +5,13 @@ import com.blackstone.webappsorganizationsurvey.dto.FileResponse;
 import com.blackstone.webappsorganizationsurvey.entity.Form;
 import com.blackstone.webappsorganizationsurvey.entity.FormFile;
 import com.blackstone.webappsorganizationsurvey.entity.enums.FileType;
+import com.blackstone.webappsorganizationsurvey.exception.FormNotFoundException;
 import com.blackstone.webappsorganizationsurvey.repository.FormFileRepository;
 import com.blackstone.webappsorganizationsurvey.util.FormActionValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -46,6 +49,17 @@ public class FileService implements IFileService {
 
         return response;
 
+    }
+
+    @Override
+    public ResponseEntity<byte[]> downLoadFile(Integer id) throws Exception {
+
+        FormFile formFile = formFileRepository.findById(id)
+                .orElseThrow(() -> new FormNotFoundException("File Not Found"));
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + formFile.getName() + "\"")
+                .body(formFile.getData());
     }
 
     /**
